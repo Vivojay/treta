@@ -1,0 +1,7 @@
+# Default deny. Provision certificate identities before enabling this profile.
+pattern readwrite treta/v1/%u/+/+/+/telemetry
+pattern readwrite treta/v1/%u/+/+/+/health
+pattern readwrite treta/v1/%u/+/+/+/events
+pattern readwrite treta/v1/%u/+/+/+/commands
+pattern readwrite treta/v1/%u/+/+/+/acks
+pattern readwrite treta/v1/%u/+/+/+/presence

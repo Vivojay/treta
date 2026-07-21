@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "treta"
+version = "0.1.0"
+description = "Simulation-first autonomy control plane"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+dependencies = [
+  "fastapi>=0.139.2,<0.140",
+  "pydantic>=2.11.7,<3",
+  "pyyaml>=6.0.2,<7",
+  "uvicorn[standard]>=0.35.0,<0.36",
+]
+
+[dependency-groups]
+dev = [
+  "bandit[toml]>=1.8.6,<2",
+  "httpx2>=2.7.0,<3",
+  "mypy>=1.17.1,<2",
+  "pip-audit>=2.9.0,<3",
+  "pytest>=9.1.1,<10",
+  "pytest-cov>=6.2.1,<7",
+  "ruff>=0.12.8,<0.13",
+  "types-pyyaml>=6.0.12.20250516",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/treta", "tools"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers -p no:cacheprovider --cov=treta --cov-report=term-missing --cov-fail-under=90"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+  "raise NotImplementedError",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4", "SIM", "RUF", "S"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S105", "S106"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tools"]
+plugins = ["pydantic.mypy"]
+warn_unreachable = true
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+skips = ["B101"]

@@ -1,0 +1,24 @@
+schema_version: 1
+verified_date: null
+status: not_verified_do_not_provision
+services:
+  - provider: Cloudflare
+    service: Pages
+    intended_use: static frontend demonstration
+    current_quota: unverified
+    documentation_owner: repository_owner
+    migration_target: S3 and CloudFront or another static host
+    data_classification: public static assets only
+    secrets_required: deployment credential
+    teardown_procedure: remove the Pages project after preserving deployment metadata
+  - provider: Render
+    service: web service
+    intended_use: low-scale FastAPI demonstration
+    current_quota: unverified
+    documentation_owner: repository_owner
+    migration_target: ECS, EKS, or another container runtime
+    data_classification: synthetic demonstration data
+    secrets_required: deployment credential and provider adapter configuration
+    teardown_procedure: remove the service after exporting required synthetic evidence
+
+# No external service may be provisioned until official quotas and billing behaviour are verified.

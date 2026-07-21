@@ -1,0 +1,111 @@
+name: treta
+
+services:
+  api:
+    profiles: [core]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      TRETA_ENVIRONMENT: local
+      TRETA_EVENT_DIRECTORY: /tmp/treta/events
+      TRETA_LOCAL_AUTH_ENABLED: "true"
+    ports: ["8000:8000"]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  web:
+    profiles: [core]
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      PUBLIC_TRETA_API_ORIGIN: http://127.0.0.1:8000
+    ports: ["5173:5173"]
+    depends_on:
+      api:
+        condition: service_healthy
+    security_opt: [no-new-privileges:true]
+
+  simulator-smoke:
+    profiles: [core]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: [python, -m, tools.treta, simulate, demo]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  firebase-emulator:
+    profiles: [core]
+    build:
+      context: .
+      dockerfile: infra/firebase/Dockerfile
+    ports: ["4000:4000", "8080:8080", "9099:9099"]
+    security_opt: [no-new-privileges:true]
+
+  minio:
+    profiles: [core]
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: [server, /data, --console-address, ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER in uncommitted .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD in uncommitted .env}
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [minio-data:/data]
+    security_opt: [no-new-privileges:true]
+
+  mosquitto:
+    profiles: [messaging]
+    image: eclipse-mosquitto:2.0.22
+    ports: ["8883:8883"]
+    volumes:
+      - ./infra/mosquitto:/mosquitto/config:ro
+      - ./infra/local-secrets/mosquitto:/mosquitto/secrets:ro
+    security_opt: [no-new-privileges:true]
+
+  nats:
+    profiles: [messaging]
+    image: nats:2.11.8-alpine
+    command: [-js, -m, "8222"]
+    ports: ["4222:4222", "8222:8222"]
+    security_opt: [no-new-privileges:true]
+
+  otel-collector:
+    profiles: [observability]
+    image: otel/opentelemetry-collector-contrib:0.132.0
+    command: [--config=/etc/otelcol-contrib/config.yaml]
+    volumes:
+      - ./observability/otel/config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports: ["4317:4317", "4318:4318"]
+    security_opt: [no-new-privileges:true]
+
+  prometheus:
+    profiles: [observability]
+    image: prom/prometheus:v3.5.0
+    command: [--config.file=/etc/prometheus/prometheus.yml]
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9090:9090"]
+    security_opt: [no-new-privileges:true]
+
+  grafana:
+    profiles: [observability]
+    image: grafana/grafana:12.1.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?set GRAFANA_ADMIN_USER in uncommitted .env}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in uncommitted .env}
+    ports: ["3000:3000"]
+    security_opt: [no-new-privileges:true]
+
+volumes:
+  minio-data:
