@@ -51,7 +51,8 @@ flowchart TB
 - **Safety:** deterministic and explainable eligibility and landing-reserve rules.
 - **Simulation:** seeded clock-driven vehicle state, telemetry, failures, local fallback, recording, and replay. It never uses wall-clock sleeps as simulation state.
 - **Application:** use-case orchestration, idempotency, event recording, and port coordination.
-- **Ports/adapters:** identity, repositories, event storage, and future providers are dependency-inverted. The default API uses a write-through JSONL event adapter; tests and deterministic replay use its in-memory port implementation.
+- **Ports/adapters:** identity, repositories, event storage, and simulation backends have explicit interfaces. The control plane accepts an injected `FleetSimulatorPort` and defaults to `DeterministicFleetSimulator`. The default API uses a write-through JSONL event adapter; tests and deterministic replay use its in-memory port implementation.
+- **Simulation boundary:** `FleetSimulatorPort` is simulation-only; it is not a MAVLink/PX4/ArduPilot vehicle adapter. Built-in deterministic replay is not claimed for injected backends. See ADR 0003.
 - **API/UI:** validate untrusted input and display source, freshness, decisions, state, and incidents.
 
 ## Command flow

@@ -1,12 +1,26 @@
 # Treta project state
 
-Last updated: 2026-07-21
+Last updated: 2026-11-02 (proposed patch, pending validation)
 
 ## Current milestone
 
 The Phase 0 foundation and first complete local, deterministic, simulation-only
 vertical slice are implemented. `DESIGN.md` remains the authoritative intended
 design; this file records only verified implemented reality.
+
+## Simulator-interface patch (pending post-apply verification)
+
+The proposed change against `dev` at `2362ffa40ed5bece0a5791399fd29925c82e13ed`
+adds an injectable simulation backend protocol with tests and ADR 0003.
+The existing deterministic simulator remains the default. Mission dispatch
+from injected backends is explicitly blocked until real receipt handling exists.
+No PX4/Gazebo, ArduPilot, physical-drone adapter, or restart recovery is
+introduced.
+
+**Validation status:** not yet executed in the target checkout. The historical
+results recorded below apply to the previous milestone, not this patch. Once
+merged, execute `python -m tools.treta ci` and `python -m tools.treta simulate demo`,
+record exact results, then update this section and the handoff file.
 
 ## Status by requirement and design section
 
