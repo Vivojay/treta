@@ -1,0 +1,10 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // The first slice uses only server-side repositories. Direct client access is denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

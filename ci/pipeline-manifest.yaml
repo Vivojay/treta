@@ -1,0 +1,17 @@
+schema_version: 1
+command_interface: python -m tools.treta
+tiers:
+  format:
+    command: python -m tools.treta format --check
+  lint:
+    command: python -m tools.treta lint
+  typecheck:
+    command: python -m tools.treta typecheck
+  push:
+    command: python -m tools.treta test push
+  security:
+    command: python -m tools.treta security
+  build:
+    command: python -m tools.treta build
+  ci:
+    command: python -m tools.treta ci

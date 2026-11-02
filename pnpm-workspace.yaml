@@ -1,0 +1,16 @@
+packages:
+  - apps/web
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - "@sveltejs/*"
+  - svelte
+
+overrides:
+  cookie: 0.7.2
+  esbuild: 0.28.1
+
+# Explicit native build-script allowlist reviewed for the Svelte/Vite toolchain.
+onlyBuiltDependencies:
+  - "@parcel/watcher"
+  - esbuild

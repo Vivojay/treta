@@ -1,0 +1,46 @@
+schema_version: 1
+commit: 00d738408dcdb9eac315be23b3b077f31d78adb0
+worktree: uncommitted-milestone-changes
+branch: main
+timestamp_utc: "2026-07-20T21:48:02Z"
+environment: local
+milestone: first-deterministic-vertical-slice
+status: complete_with_environment_limitations
+verified_commands:
+  - "python -m tools.treta bootstrap: passed locked/frozen install"
+  - "python -m tools.treta ci: passed"
+  - "python -m tools.treta security: passed; no known dependency vulnerabilities"
+  - "python -m tools.treta dev core: API ready and web port listening"
+  - "browser desktop/mobile flow: passed with clean console"
+test_results:
+  python: "46 passed; 96.83% aggregate branch coverage"
+  frontend: "5 passed; 100% statements/branches/functions/lines"
+  replay: "67 events; identical final SHA-256 hashes; mission ABORTED"
+blocked_verification:
+  - "Docker/Compose profiles: Docker is not installed"
+  - "GitHub private visibility: gh/authenticated repository API unavailable"
+open_risks:
+  - "physical safety is unverified; physical adapters remain absent and disabled"
+  - "local identity headers are development-only"
+  - "entity projections are not restored after restart"
+  - "JSONL audit is durable local evidence, not immutable administrator-proof storage"
+next_tasks:
+  - "implement Firebase identity/repository adapters with emulator contract tests"
+  - "restore projections from durable events and add signed checkpoints"
+  - "complete map, vehicle detail, and general mission-form UI"
+schema_versions:
+  domain_event: 1
+  scenario: 1
+  api: v1
+deployment_versions:
+  direct_local: verified
+  compose_local: unverified_no_docker
+  free_staging: not_deployed
+  production_reference: disabled
+  physical_pilot: disabled
+proposed_patch:
+  target_branch: dev
+  base_commit: 2362ffa40ed5bece0a5791399fd29925c82e13ed
+  scope: injectable-simulation-backend-only
+  post_apply_verification: pending
+  physical_adapter: absent

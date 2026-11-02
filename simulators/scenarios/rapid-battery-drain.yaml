@@ -1,0 +1,41 @@
+schema_version: 1
+name: rapid-battery-drain-at-synthetic-test-range
+seed: 42
+simulation_rate: 1.0
+data_classification: synthetic
+
+fleet:
+  - id: TRETA-001
+    profile: light-delivery-quad
+    initial_battery_percent: 92
+  - id: TRETA-002
+    profile: medium-delivery-hex
+    initial_battery_percent: 76
+  - id: TRETA-003
+    profile: legacy-degraded-quad
+    initial_battery_percent: 61
+
+mission:
+  type: DELIVERY_SIMULATION
+  origin:
+    latitude_deg: 0.0100
+    longitude_deg: 0.0100
+  destination:
+    latitude_deg: 0.0140
+    longitude_deg: 0.0150
+  payload_kg: 1.2
+  minimum_landing_reserve_percent: 25
+
+failures:
+  - at_simulation_seconds: 0
+    target: assigned_drone
+    type: RAPID_BATTERY_DRAIN
+    severity: HIGH
+    parameters:
+      multiplier: 25.0
+
+expected:
+  - event: safety.rule_triggered
+    rule_id: BATTERY_LANDING_RESERVE
+  - command: RETURN_TO_HOME
+  - final_mission_state: ABORTED
