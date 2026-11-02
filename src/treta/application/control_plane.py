@@ -538,9 +538,7 @@ class ControlPlaneService:
 
     def replay(self) -> ReplayResult:
         if type(self.simulator) is not DeterministicFleetSimulator:
-            raise ApplicationConflictError(
-                "replay requires the built-in deterministic simulator"
-            )
+            raise ApplicationConflictError("replay requires the built-in deterministic simulator")
         original_hashes = self.event_store.event_hashes(DEFAULT_TENANT_ID)
         replayed = ControlPlaneService(seed=self.seed)
         for action, arguments in self._actions:
