@@ -30,8 +30,9 @@ from treta.domain.state_machines import (
     transition_mission,
 )
 from treta.ports.interfaces import ControlPlaneRepositoryPort, EventStorePort, Principal
+from treta.ports.simulator import FleetSimulatorPort, SafetyTriggerPort
 from treta.safety.policies import EligibilityPolicy
-from treta.simulation.engine import DeterministicFleetSimulator, LocalSafetyTrigger
+from treta.simulation.engine import DeterministicFleetSimulator
 from treta.simulation.scenarios import Scenario
 
 DEFAULT_TENANT_ID = "tenant-synthetic"
@@ -58,11 +59,16 @@ class ControlPlaneService:
         seed: int = 42,
         repository: ControlPlaneRepositoryPort | None = None,
         event_store: EventStorePort | None = None,
+        simulator: FleetSimulatorPort | None = None,
     ) -> None:
+        if simulator is not None and simulator.seed != seed:
+            raise ValueError("simulator seed must match control-plane seed")
         self.seed = seed
         self.repository = repository or InMemoryControlPlaneRepository()
         self.event_store = event_store or InMemoryEventStore()
-        self.simulator = DeterministicFleetSimulator(seed=seed)
+        self.simulator: FleetSimulatorPort = (
+            simulator if simulator is not None else DeterministicFleetSimulator(seed=seed)
+        )
         self.eligibility_policy = EligibilityPolicy()
         self._eligibility: dict[str, EligibilityResult] = {}
         self._active_safety_command: dict[str, str] = {}
@@ -374,6 +380,11 @@ class ControlPlaneService:
         record_action: bool = True,
     ) -> Mission:
         authorize(principal, "mission:start", DEFAULT_TENANT_ID)
+        if type(self.simulator) is not DeterministicFleetSimulator:
+            raise ApplicationConflictError(
+                "external simulation backends cannot dispatch missions without a "
+                "validated command receipt and observed-state adapter"
+            )
         replay_id = self.repository.resolve_idempotency(
             DEFAULT_TENANT_ID, f"mission:start:{idempotency_key}"
         )
@@ -526,6 +537,10 @@ class ControlPlaneService:
         return self.snapshot()
 
     def replay(self) -> ReplayResult:
+        if type(self.simulator) is not DeterministicFleetSimulator:
+            raise ApplicationConflictError(
+                "replay requires the built-in deterministic simulator"
+            )
         original_hashes = self.event_store.event_hashes(DEFAULT_TENANT_ID)
         replayed = ControlPlaneService(seed=self.seed)
         for action, arguments in self._actions:
@@ -601,7 +616,7 @@ class ControlPlaneService:
     def eligibility(self, mission_id: str) -> EligibilityResult | None:
         return self._eligibility.get(mission_id)
 
-    def _handle_local_safety_trigger(self, trigger: LocalSafetyTrigger) -> None:
+    def _handle_local_safety_trigger(self, trigger: SafetyTriggerPort) -> None:
         mission = self.repository.get_mission(DEFAULT_TENANT_ID, trigger.mission_id)
         drone = self.repository.get_drone(DEFAULT_TENANT_ID, trigger.drone_id)
         safety_event = self._record(
@@ -701,7 +716,7 @@ class ControlPlaneService:
                 self.repository.save_incident(incident)
 
     def _incident_for_trigger(
-        self, trigger: LocalSafetyTrigger, event_id: str, command_id: str
+        self, trigger: SafetyTriggerPort, event_id: str, command_id: str
     ) -> Incident:
         existing_id = self._incident_by_mission.get(trigger.mission_id)
         if existing_id:

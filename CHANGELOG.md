@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added an injectable simulation-backend port (simulation only), seed consistency
+  validation, fail-closed external dispatch/replay, and contract smoke tests.
 - Established Phase 0 architecture, state, ADR, handoff, security, safety, test, and portability documents.
 - Added provider-neutral CI entry points and thin GitHub/Jenkins orchestration.
 - Added ignore policies, including `first_prompt.txt` in `.gitignore` and `.dockerignore`.

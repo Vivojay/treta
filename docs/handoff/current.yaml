@@ -38,3 +38,9 @@ deployment_versions:
   free_staging: not_deployed
   production_reference: disabled
   physical_pilot: disabled
+proposed_patch:
+  target_branch: dev
+  base_commit: 2362ffa40ed5bece0a5791399fd29925c82e13ed
+  scope: injectable-simulation-backend-only
+  post_apply_verification: pending
+  physical_adapter: absent
